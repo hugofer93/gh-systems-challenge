@@ -1,0 +1,20 @@
+services:
+  postgres:
+    container_name: "ghsystems_postgres"
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+
+  backend:
+    container_name: "ghsystems_backend"
+    volumes:
+      - ".:/opt/ghsystems"
+    environment:
+      DEBUG: "true"
+      HOST_PORT: ${HOST_PORT}
+    ports:
+      - ${HOST_PORT}:${HOST_PORT}
+    command: >
+      sh -c "poetry install --no-root
+      && poetry run python manage.py makemigrations --noinput
+      && poetry run python manage.py migrate --noinput
+      && poetry run python manage.py runserver 0:${HOST_PORT}"

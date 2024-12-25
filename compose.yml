@@ -1,0 +1,35 @@
+services:
+  postgres:
+    container_name: "ghsystems_postgres"
+    image: "postgres:16.6-alpine3.21"
+    environment:
+      POSTGRES_PORT: ${DB_PORT}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    expose:
+      - ${DB_PORT}
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    restart: "unless-stopped"
+
+  backend:
+    container_name: "ghsystems_backend"
+    build: .
+    environment:
+      HOST_PORT: ${HOST_PORT}
+    expose:
+      - ${HOST_PORT}
+    depends_on:
+      "postgres":
+        condition: service_healthy
+    restart: "unless-stopped"
+
+
+volumes:
+  postgres_data: {}
